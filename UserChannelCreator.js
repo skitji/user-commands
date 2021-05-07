@@ -1,6 +1,6 @@
 registerPlugin({
 	name: 'UserChannelCreator',
-	version: '0.0.0',
+	version: '1.0.0',
 	backends: ['ts3'],
 	engine: '>= 0.13.37',
     description: 'Creates Channel when User needed',
@@ -24,9 +24,12 @@ registerPlugin({
 		type: 'string'
 	}]
 }, function(sinusbot, config) {
-	var engine = require('engine');
-	var backend = require('backend');
-	var event = require('event');
+	const engine = require('engine');
+	const backend = require('backend');
+	const event = require('event');
+	const helpMessages = {
+		'channel': '-p set a password \n -dm don\'t move' 
+	}
 	var userChannels = [];
 	var userHeaderChannels = [];
 	var parentIndex;
@@ -35,28 +38,28 @@ registerPlugin({
 		if(ev.mode == 1) {
 			main(ev.text, ev.client);
 		}
-		
 	});
 
+	/**
+	 * Handles with incomming commands
+	 * @param {string} command with ![cmd] [args]
+	 * @param {Client} sender client who send command
+	 */
 	const main = (command, sender) => {
 		let args = new Map();
-		let cmd = command.split("-")[0].replace('!', '').trim();
-		command.trim()
-				.split("-")
-				.slice(1,command.split("-").length)
+		let splittedCommand = command.trim().split("-");
+		let cmd = splittedCommand[0].replace('!', '').trim();
+		splittedCommand
+				.slice(1,splittedCommand.length)
 				.map(x => x.trim().split(" "))
 				.forEach(x => {
-					engine.log("x" + x);
 					args.set(x[0], x[1]);
 				});
 		for([key, value] of args) {
+			if(key == 'h') sender.chat(helpMessages[cmd]);
 			if(key == 'p' && value == undefined) break;
 			if(value == undefined) args.set(key, true);
 		}
-		
-		engine.log(args.get('p'));
-		engine.log(args.get('dm'));
-		engine.log(cmd + "|");
 		switch (cmd) {
 			case 'channel':
 				return createUserChannel(sender, args);
@@ -65,8 +68,13 @@ registerPlugin({
 		}
 	}
 	
+	/**
+	 * Creates a channel for the sender
+	 * @param {Client} sender client who send command
+	 * @param {Map<string,string>} args arguments for command
+	 */
 	const createUserChannel = (sender, args) => {
-		createUserHeaderChannels();
+		if(userChannels.length == 0) createUserChannelsHeader();
 		var channelName = config.name.replace('%c', sender.name());
 		var create = backend.createChannel({parent: userHeaderChannels[parentIndex].id(), name: channelName});
 		if(args.get('p') != undefined) {
@@ -82,20 +90,26 @@ registerPlugin({
 		
 	}
 
-	const createUserHeaderChannels = () => {
-		if(userChannels.length == 0) {
-			userHeaderChannels.push(backend.createChannel({name: '[*spacer998]___', parent: 0, permanent: true}));
-			userHeaderChannels.push(backend.createChannel({name: '[cspacer] User Channels', parent: 0, permanent: true}));
-			parentIndex = 1;
-			userHeaderChannels.push(backend.createChannel({name: '[*spacer999]___', parent: 0, permanent: true}));
-		}
+	/**
+	 * Creates the header for all user channels
+	 */
+	const createUserChannelsHeader = () => {
+		userHeaderChannels.push(backend.createChannel({name: '[*spacer998]___', parent: 0, permanent: true}));
+		userHeaderChannels.push(backend.createChannel({name: '[cspacer] User Channels', parent: 0, permanent: true}));
+		parentIndex = 1;
+		userHeaderChannels.push(backend.createChannel({name: '[*spacer999]___', parent: 0, permanent: true}));
+	}
+
+	/**
+	 * Deletes the header for all user channels
+	 */
+	const deleteUserChannelsHeader = () => {	
+		userHeaderChannels.forEach(x => x.delete());
+		userHeaderChannels = []
 	}
 	
 	event.on('channelDelete', function(ev) {
 		userChannels = userChannels.filter(x => x != ev.id());
-		if(userChannels.length == 0) {
-			userHeaderChannels.forEach(x => x.delete());
-			userHeaderChannels = [];
-		}
+		if(userChannels.length == 0) deleteUserChannelsHeader();
 	});
 })
