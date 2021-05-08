@@ -1,9 +1,9 @@
 registerPlugin({
-	name: 'UserChannelCreator',
+	name: 'UserCommands',
 	version: '1.0.0',
 	backends: ['ts3'],
 	engine: '>= 0.13.37',
-    description: 'Creates Channel when User needed',
+    description: 'An easy way to add commands',
     author: 'skitji <info@skitji.de>',
 	vars: [{
 		name: 'GroupChannel',
@@ -56,7 +56,7 @@ registerPlugin({
 					args.set(x[0], x[1]);
 				});
 		for([key, value] of args) {
-			if(key == 'h') sender.chat(helpMessages[cmd]);
+			if(key == 'h') sender.chat('Help for !' + cmd + '\n' + helpMessages[cmd]);
 			if(key == 'p' && value == undefined) break;
 			if(value == undefined) args.set(key, true);
 		}
