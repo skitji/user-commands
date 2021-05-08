@@ -1,3 +1,10 @@
+/**
+ * A script for sinusbot to add commands
+ * @name UserCommands
+ * @version 1.0.0
+ * @author skitji
+ * @listens channel, channelDelete
+ */
 registerPlugin({
 	name: 'UserCommands',
 	version: '1.0.0',
@@ -25,9 +32,13 @@ registerPlugin({
 		}
 	]
 }, function (sinusbot, config) {
+
+//──── Imports ───────────────────────────────────────────────────────────────────────────
 	const engine = require('engine');
 	const backend = require('backend');
 	const event = require('event');
+
+//──── Parameters ────────────────────────────────────────────────────────────────────────
 	const commandInfo = {
 		'channel': {
 			'Description': 'Creates your own channel',
@@ -40,11 +51,12 @@ registerPlugin({
 			'Aliases': ['commands', 'h'],
 		}
 	}
-	var userChannels = [];
-	var userHeaderChannels = [];
-	var parentIndex;
 	
-
+//========================================================================================
+/*                                                                                      *
+ *                                        Events                                        *
+ *                                                                                      */
+//========================================================================================
 	event.on('chat', function (ev) {
 		if (ev.mode == 1) {
 			main(ev.text, ev.client);
@@ -55,6 +67,12 @@ registerPlugin({
 		userChannels = userChannels.filter(x => x != ev.id());
 		if (userChannels.length == 0) deleteUserChannelsHeader();
 	});
+
+//========================================================================================
+/*                                                                                      *
+ *                                    Main functions                                    *
+ *                                                                                      */
+//========================================================================================
 
 	/**
 	 * Handles with incomming commands
@@ -114,6 +132,18 @@ registerPlugin({
 		return command;
 	}
 
+//========================================================================================
+/*                                                                                      *
+ *                                     User Channel                                     *
+ *                                                                                      */
+//========================================================================================
+
+//──── Parameters ────────────────────────────────────────────────────────────────────────
+	var userChannels = [];
+	var userHeaderChannels = [];
+	var parentIndex;
+
+//──── Functions ─────────────────────────────────────────────────────────────────────────
 	/**
 	 * Creates a channel for the sender
 	 * @param {Client} sender client who send command
@@ -169,6 +199,13 @@ registerPlugin({
 		userHeaderChannels = []
 	}
 
+//========================================================================================
+/*                                                                                      *
+ *                                         Help                                         *
+ *                                                                                      */
+//========================================================================================
+
+//──── Functions ─────────────────────────────────────────────────────────────────────────
 	/**
 	 * Sends a help message
 	 * @param {Client} sender client who send command
